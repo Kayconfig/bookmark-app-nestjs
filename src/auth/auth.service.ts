@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto';
 import * as argon from 'argon2';
@@ -53,6 +57,7 @@ export class AuthService {
 
       return user;
     } catch (error) {
+      console.log(error);
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           // for detecting violation in unique fields, i.e a duplicate is detected
@@ -63,6 +68,9 @@ export class AuthService {
           });
         }
       }
+      throw new InternalServerErrorException({
+        error: 'Internal server error',
+      });
     }
   }
 
