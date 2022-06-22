@@ -149,7 +149,6 @@ describe('App e2e', () => {
           .withBody(update)
           .expectStatus(HttpStatus.OK)
           .expect((ctx) => {
-            console.log(ctx);
             const returnedData = lodash.pick(ctx.res.body, [
               'firstName',
               'lastName',

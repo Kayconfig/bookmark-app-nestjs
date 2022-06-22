@@ -12,7 +12,6 @@ export class UserController {
   constructor(private userService: UserService) {}
   @Get('me')
   getMe(@GetUser() user: User) {
-    console.log('signin controller:', user);
     return lodash.omit(user, ['password', 'updatedAt']);
   }
 
