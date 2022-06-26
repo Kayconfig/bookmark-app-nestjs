@@ -1,9 +1,4 @@
-import {
-  HttpCode,
-  HttpStatus,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { AppModule } from '../src/app.module';
@@ -77,8 +72,7 @@ describe('App e2e', () => {
           .spec()
           .post(`${baseUrl}/auth/signup`)
           .withBody(authDto)
-          .expectStatus(HttpStatus.CREATED)
-          .inspect();
+          .expectStatus(HttpStatus.CREATED);
       });
     });
     describe('SignIn', () => {
@@ -159,35 +153,74 @@ describe('App e2e', () => {
     });
   });
   describe('Bookmarks', () => {
-    describe('Get Bookmarks', () => {});
-    describe('Create Bookmarks', () => {});
-    describe('Get Bookmark by Id', () => {});
-    describe('Edit Bookmarks', () => {});
-    describe('Delete Bookmark by Id', () => {});
+    const bookmark = {
+      title: 'Bookmark One',
+      description: 'This bookmarks is amazing.',
+      link: 'https://google.com',
+    };
+    let bookmarkId: number;
+    describe('Get Bookmarks', () => {
+      it(' should get bookmarks', () => {
+        return pactum
+          .spec()
+          .get(`${baseUrl}/bookmarks`)
+          .withHeaders('Authorization', 'Bearer $S{access_token}')
+          .expectStatus(HttpStatus.OK)
+          .expectBody({ bookmarks: [] });
+      });
+    });
+    describe('Create Bookmarks', () => {
+      it('should create bookmark', () => {
+        return pactum
+          .spec()
+          .post(`${baseUrl}/bookmarks`)
+          .withBody(bookmark)
+          .withHeaders('Authorization', 'Bearer $S{access_token}')
+          .expectStatus(HttpStatus.CREATED)
+          .stores('bookmarkId', 'id')
+          .expect((ctx) => (bookmarkId = ctx.res.body.id));
+      });
+    });
+    describe('Get Bookmark by Id', () => {
+      it('should get bookmark', () => {
+        return pactum
+          .spec()
+          .get(`${baseUrl}/bookmarks/$S{bookmarkId}`)
+          .withHeaders('Authorization', `Bearer $S{access_token}`)
+          .expectStatus(HttpStatus.OK)
+          .expect((ctx) => expect(ctx.res.body.id).toBe(bookmarkId));
+      });
+    });
+    describe('Edit Bookmarks', () => {
+      const editBookmark = {
+        title: 'Edited Bookmark',
+        description: 'Description is modified',
+      };
+      it('should edit bookmark', () => {
+        return pactum
+          .spec()
+          .patch(`${baseUrl}/bookmarks/$S{bookmarkId}`)
+          .withHeaders('Authorization', 'Bearer $S{access_token}')
+          .withBody(editBookmark)
+          .expectStatus(HttpStatus.OK)
+          .expect((ctx) => {
+            const updatedFields = lodash.pick(ctx.res.body, [
+              'title',
+              'description',
+            ]);
+            expect(updatedFields).toEqual(editBookmark);
+          });
+      });
+    });
+    describe('Delete Bookmark by Id', () => {
+      it('should delete existing bookmark', () => {
+        return pactum
+          .spec()
+          .delete(`${baseUrl}/bookmarks/$S{bookmarkId}`)
+          .withHeaders('Authorization', 'Bearer $S{access_token}')
+          .expectStatus(HttpStatus.OK)
+          .expect((ctx) => ctx.res.body.id === bookmarkId);
+      });
+    });
   });
 });
-
-// import { Test, TestingModule } from '@nestjs/testing';
-// import { INestApplication } from '@nestjs/common';
-// import * as request from 'supertest';
-// import { AppModule } from './../src/app.module';
-
-// describe('AppController (e2e)', () => {
-//   let app: INestApplication;
-
-//   beforeEach(async () => {
-//     const moduleFixture: TestingModule = await Test.createTestingModule({
-//       imports: [AppModule],
-//     }).compile();
-
-//     app = moduleFixture.createNestApplication();
-//     await app.init();
-//   });
-
-//   it('/ (GET)', () => {
-//     return request(app.getHttpServer())
-//       .get('/')
-//       .expect(200)
-//       .expect('Hello World!');
-//   });
-// });

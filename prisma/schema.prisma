@@ -35,4 +35,5 @@ model Bookmark{
   userId Int
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("bookmarks")
+  @@unique([id, userId], name:"uniqueBookmarkId")
 }
