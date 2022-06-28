@@ -17,7 +17,7 @@ import { BookmarkService } from './bookmark.service';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
 
 @UseGuards(JwtGuard)
-@Controller('bookmarks')
+@Controller('v1/bookmarks')
 export class BookmarkController {
   constructor(private bookmarkService: BookmarkService) {}
 
